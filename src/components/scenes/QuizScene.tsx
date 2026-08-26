@@ -99,17 +99,26 @@ function mapAdaptiveQuestion(
   item: AdaptiveQuizItem,
   index: number
 ): UiQuestion {
+  // Guarantee the answer is on screen. The backend builds its
+  // own option list, so if it ever omits the correct word the
+  // question has no right answer at all. Adding it here (and
+  // dropping the last distractor to keep four) makes that
+  // impossible regardless of what the API returns.
+  const options = item.options.includes(item.correct_word)
+    ? item.options
+    : [item.correct_word, ...item.options.slice(0, 3)];
+
   // A meaning question only works when every option has its own definition.
   // vocabularyMeaning() returns the same generic sentence for unknown words,
   // which would render four identical answers.
-  const meanings = item.options.map(
+  const meanings = options.map(
     (option) => vocabularyMeaning(option)
   );
 
   const meaningsAreDistinct =
     new Set(meanings).size === meanings.length;
 
-  const choices: UiChoice[] = item.options.map(
+  const choices: UiChoice[] = options.map(
     (option, optionIndex) => ({
       id: `q${index}-c${optionIndex}`,
       text: meaningsAreDistinct
@@ -155,13 +164,23 @@ function buildFallbackQuiz(
   const source = remoteWords.length >= 3 ? remoteWords : local;
   const words = source.map((item) => item.correct_word);
 
-  return source.slice(0, 5).map((item) => ({
-    ...item,
-    options: shuffled([
-      item.correct_word,
-      ...words.filter((word) => word !== item.correct_word),
-    ]).slice(0, 4),
-  }));
+  // Shuffle before taking five. Slicing the first five off an
+  // unshuffled pool meant the same questions every single run,
+  // however many phrases the pool held.
+  return shuffled(source).slice(0, 5).map((item) => {
+    const distractors = shuffled(
+      words.filter((word) => word !== item.correct_word)
+    ).slice(0, 3);
+
+    // Shuffle the distractors FIRST, then add the answer and
+    // shuffle the position. Shuffling all five together and
+    // slicing to four dropped the correct answer roughly a
+    // quarter of the time, which left the question unanswerable.
+    return {
+      ...item,
+      options: shuffled([item.correct_word, ...distractors]),
+    };
+  });
 }
 
 
