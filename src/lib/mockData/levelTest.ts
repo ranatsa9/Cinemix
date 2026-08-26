@@ -1,50 +1,105 @@
 import { LevelTestQuestion } from "@/lib/types";
 
-// A clear progression: 3 foundation, 3 intermediate, then 3 advanced items.
+// Nine-question progressive placement test approved for the final experience:
+// Q1–3 Beginner (A1–A2), Q4–6 Intermediate (B1–B2),
+// Q7–9 Advanced (C1: complex grammar, nuance, and subtext).
 export const levelTestQuestions: LevelTestQuestion[] = [
   {
-    id: "q1", prompt: "Which word means the opposite of \"begin\"?",
-    choices: [{ id: "a", text: "Start" }, { id: "b", text: "Finish" }, { id: "c", text: "Continue" }, { id: "d", text: "Open" }],
+    id: "q1",
+    prompt: "Choose the correct sentence.",
+    choices: [
+      { id: "a", text: "She go to work every day." },
+      { id: "b", text: "She goes to work every day." },
+      { id: "c", text: "She going to work every day." },
+      { id: "d", text: "She gone to work every day." },
+    ],
     correctId: "b", difficulty: 1, skill: "vocabulary",
   },
   {
-    id: "q2", prompt: "Choose the grammatically correct sentence.",
-    choices: [{ id: "a", text: "She don't like coffee." }, { id: "b", text: "She doesn't likes coffee." }, { id: "c", text: "She doesn't like coffee." }, { id: "d", text: "She not like coffee." }],
-    correctId: "c", difficulty: 1, skill: "vocabulary",
+    id: "q2",
+    context: "Omar arrived before the office opened. Because it was raining, he crossed the street and decided to wait in a café.",
+    prompt: "Where is Omar waiting now?",
+    choices: [
+      { id: "a", text: "Inside the office" },
+      { id: "b", text: "At home" },
+      { id: "c", text: "In a café across the street" },
+      { id: "d", text: "Outside in the rain" },
+    ],
+    correctId: "c", difficulty: 2, skill: "comprehension",
   },
   {
-    id: "q3", prompt: "Which word best completes the sentence: \"He was so ___ after the long flight that he fell asleep instantly.\"",
-    choices: [{ id: "a", text: "exhausted" }, { id: "b", text: "curious" }, { id: "c", text: "patient" }, { id: "d", text: "ordinary" }],
-    correctId: "a", difficulty: 2, skill: "vocabulary",
+    id: "q3",
+    prompt: "Complete the sentence: \"I have lived here ___ 2022.\"",
+    choices: [
+      { id: "a", text: "for" }, { id: "b", text: "since" },
+      { id: "c", text: "during" }, { id: "d", text: "from" },
+    ],
+    correctId: "b", difficulty: 2, skill: "vocabulary",
   },
   {
-    id: "q4", context: "A: \"Can you keep an eye on my bag for a second?\" B: \"Sure.\"", prompt: "What is A asking B to do?",
-    choices: [{ id: "a", text: "Watch the bag briefly" }, { id: "b", text: "Carry the bag home" }, { id: "c", text: "Look inside the bag" }, { id: "d", text: "Move the bag elsewhere" }],
+    id: "q4",
+    context: "A: \"How was the interview?\" B: \"I’ve had better days.\"",
+    prompt: "What does B imply?",
+    choices: [
+      { id: "a", text: "The interview went badly" },
+      { id: "b", text: "The interview was postponed" },
+      { id: "c", text: "It was B’s best interview" },
+      { id: "d", text: "B received the job immediately" },
+    ],
     correctId: "a", difficulty: 3, skill: "comprehension",
   },
   {
-    id: "q5", context: "A: \"How was the interview?\" B: \"Honestly? I've had better days.\"", prompt: "What does B imply?",
-    choices: [{ id: "a", text: "The interview went extremely well" }, { id: "b", text: "The interview probably did not go well" }, { id: "c", text: "The interview was moved to another day" }, { id: "d", text: "B has not attended the interview yet" }],
-    correctId: "b", difficulty: 3, skill: "comprehension",
+    id: "q5",
+    prompt: "Choose the best completion: \"If I had known about the traffic, I ___ earlier.\"",
+    choices: [
+      { id: "a", text: "would leave" }, { id: "b", text: "would have left" },
+      { id: "c", text: "will have left" }, { id: "d", text: "had left" },
+    ],
+    correctId: "b", difficulty: 3, skill: "vocabulary",
   },
   {
-    id: "q6", context: "\"Had I known the film was three hours long, I would have chosen another one.\"", prompt: "Which interpretation is correct?",
-    choices: [{ id: "a", text: "The speaker knew the length and chose it anyway" }, { id: "b", text: "The speaker has not chosen a film yet" }, { id: "c", text: "The speaker did not know the length and now regrets the choice" }, { id: "d", text: "The speaker prefers films longer than three hours" }],
-    correctId: "c", difficulty: 3, skill: "conversational",
+    id: "q6",
+    context: "A: \"Did Maya admit she broke it?\" B: \"She danced around the subject.\"",
+    prompt: "What did Maya do?",
+    choices: [
+      { id: "a", text: "She celebrated before answering" },
+      { id: "b", text: "She avoided answering directly" },
+      { id: "c", text: "She denied being present" },
+      { id: "d", text: "She explained everything clearly" },
+    ],
+    correctId: "b", difficulty: 3, skill: "conversational",
   },
   {
-    id: "q7", context: "\"Her apology was less an admission of fault than an attempt to forestall further criticism.\"", prompt: "What does the sentence imply?",
-    choices: [{ id: "a", text: "She fully accepted responsibility for the mistake" }, { id: "b", text: "Her apology was mainly strategic, intended to prevent more criticism" }, { id: "c", text: "She apologized because the criticism had already stopped" }, { id: "d", text: "Her apology made the criticism more severe" }],
+    id: "q7",
+    prompt: "Choose the best completion: \"Were the evidence more conclusive, the committee ___ the proposal.\"",
+    choices: [
+      { id: "a", text: "would endorse" }, { id: "b", text: "will endorse" },
+      { id: "c", text: "endorsed" }, { id: "d", text: "would have been endorsed" },
+    ],
+    correctId: "a", difficulty: 5, skill: "vocabulary",
+  },
+  {
+    id: "q8",
+    context: "A critic writes: \"The director’s restraint is admirable, though at times the film mistakes ambiguity for depth.\"",
+    prompt: "Which interpretation best captures the critic’s position?",
+    choices: [
+      { id: "a", text: "The film is profound simply because it explains very little." },
+      { id: "b", text: "The subtlety works, but some obscurity feels unearned." },
+      { id: "c", text: "Every mystery should be explicitly resolved." },
+      { id: "d", text: "The director lacks any sense of restraint." },
+    ],
     correctId: "b", difficulty: 5, skill: "comprehension",
   },
   {
-    id: "q8", context: "\"Only after the credits rolled did he realize the narrator had been unreliable.\"", prompt: "Which interpretation is most accurate?",
-    choices: [{ id: "a", text: "He distrusted the narrator from the beginning" }, { id: "b", text: "The credits revealed who the narrator was" }, { id: "c", text: "He realized the narrator's unreliability only when the film had ended" }, { id: "d", text: "He never questioned the narrator's version of events" }],
-    correctId: "c", difficulty: 5, skill: "comprehension",
-  },
-  {
-    id: "q9", context: "\"I wouldn't say the proposal is without merit; I merely question whether its virtues survive contact with reality.\"", prompt: "What is the speaker's position?",
-    choices: [{ id: "a", text: "The proposal is entirely worthless" }, { id: "b", text: "The proposal is already proven to work" }, { id: "c", text: "The proposal has theoretical value but may be impractical" }, { id: "d", text: "The proposal should be accepted without changes" }],
+    id: "q9",
+    context: "A: \"He presented the decision as inevitable.\" B: \"Convenient, considering he engineered the circumstances that made it so.\"",
+    prompt: "What is B suggesting?",
+    choices: [
+      { id: "a", text: "He accurately predicted an unavoidable outcome." },
+      { id: "b", text: "He accepted circumstances beyond his control." },
+      { id: "c", text: "He created the conditions, then denied responsibility for the result." },
+      { id: "d", text: "He did not know how the decision had been made." },
+    ],
     correctId: "c", difficulty: 5, skill: "conversational",
   },
 ];
