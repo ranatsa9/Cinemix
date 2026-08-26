@@ -11,7 +11,18 @@ router = APIRouter()
 
 # Load Word2Vec ONCE when backend starts.
 # We do not want to reload the model on every request.
-word2vec_model = load_word2vec_model()
+# Loaded on the first request, not at import time, so /health can answer
+# while the model is still cold.
+word2vec_model = None
+
+
+def get_model():
+    global word2vec_model
+
+    if word2vec_model is None:
+        word2vec_model = load_word2vec_model()
+
+    return word2vec_model
 
 
 @router.get("/adaptive/activity/{movie_id}")
@@ -19,7 +30,7 @@ def get_adaptive_activity(movie_id: int):
     try:
         activity = build_full_activity(
             movie_id,
-            word2vec_model,
+            get_model(),
         )
 
         if not activity:

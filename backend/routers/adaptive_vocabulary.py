@@ -15,7 +15,17 @@ from backend.adaptive.src.subtitles_loader import (
 router = APIRouter()
 
 # نحمل المودل مرة وحدة فقط وقت تشغيل الباك
-word2vec_model = load_word2vec_model()
+# Loaded on the first request, not at import time.
+word2vec_model = None
+
+
+def get_model():
+    global word2vec_model
+
+    if word2vec_model is None:
+        word2vec_model = load_word2vec_model()
+
+    return word2vec_model
 
 # Common concrete words do not add useful learning value in a movie
 # preview, even when they happen to occur in the subtitles.
@@ -70,7 +80,7 @@ def get_adaptive_vocabulary(movie_id: int):
             distractors, source = get_distractors(
                 correct_word,
                 fallback_related,
-                word2vec_model,
+                get_model(),
                 n=3,
             )
 
