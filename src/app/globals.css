@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-display: var(--font-display);
+  --font-ui: var(--font-ui);
+  --font-brand: var(--font-brand);
+  --font-cinematic: var(--font-display);
+
+  /* base */
+  --color-midnight: #05060c;
+  --color-midnight-2: #0a0d1a;
+  --color-midnight-3: #10142a;
+  --color-porcelain: #f3f1ea;
+  --color-porcelain-dim: #b9b7c9;
+
+  /* accents */
+  --color-violet: #8b6bff;
+  --color-violet-deep: #5b3df0;
+  --color-lavender: #c3b5ff;
+  --color-coral: #ff6f61;
+  --color-amber: #ffb648;
+  --color-gold: #f2c879;
+  --color-pink: #ff7ec4;
+  --color-cyan: #5fe3ff;
+
+  --animate-drift-slow: drift 60s linear infinite;
+  --animate-drift-slow-reverse: drift-reverse 70s linear infinite;
+  --animate-grain: grain 8s steps(8) infinite;
+  --animate-pulse-glow: pulse-glow 4s ease-in-out infinite;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  border-color: theme(--color-porcelain / 10%);
+}
+
+html,
+body {
+  background: var(--color-midnight);
+}
+
+body {
+  font-feature-settings: "ss01" 1;
+}
+
+/* A dedicated cinematic identity: clean and modern without changing the
+   editorial serif used by the storytelling headlines. */
+.cinemix-wordmark {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-brand), var(--font-ui), sans-serif;
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  filter: drop-shadow(0 0 26px rgb(181 156 255 / 0.16));
+}
+
+.cinemix-wordmark-name {
+  color: transparent;
+  background: linear-gradient(105deg, #fffdf7 4%, #ddd4ff 38%, #a98cff 64%, #f2c879 88%, #ffb648 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  font-weight: 600;
+}
+
+.cinemix-mini-wordmark {
+  color: transparent;
+  background: linear-gradient(100deg, #eee8ff 5%, #b59cff 55%, #f2c879 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  font-family: var(--font-brand), var(--font-ui), sans-serif;
+  font-weight: 600;
+}
+
+.intro-statement {
+  max-width: 52rem;
+  color: var(--color-porcelain);
+  font-family: var(--font-display), var(--font-ui), sans-serif;
+  font-size: clamp(2.25rem, 4.4vw, 4rem);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+  filter: drop-shadow(0 12px 28px rgb(0 0 0 / 0.34));
+}
+
+.intro-statement-accent {
+  color: transparent;
+  background: linear-gradient(100deg, #f2c879 4%, #ffcf78 56%, #d5c4ff 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+::selection {
+  background: var(--color-violet);
+  color: var(--color-midnight);
+}
+
+/* Slim, cinematic scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-violet) 40%, transparent);
+  border-radius: 999px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-amber);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-33.333%, 0, 0);
+  }
+}
+
+@keyframes drift-reverse {
+  from {
+    transform: translate3d(-33.333%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-1%, -2%); }
+  20% { transform: translate(2%, 1%); }
+  30% { transform: translate(-2%, 2%); }
+  40% { transform: translate(1%, -1%); }
+  50% { transform: translate(-1%, 2%); }
+  60% { transform: translate(2%, -2%); }
+  70% { transform: translate(-2%, -1%); }
+  80% { transform: translate(1%, 2%); }
+  90% { transform: translate(-1%, 1%); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.06); }
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+  animation: var(--animate-grain);
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 45%,
+    color-mix(in srgb, var(--color-midnight) 78%, transparent) 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

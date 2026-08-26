@@ -1,0 +1,34 @@
+{
+  "user_id": "cinemix_demo_user",
+  "current_level": "Beginner",
+  "preferences": {
+    "favorite_genres": [],
+    "enjoyment_ratings": {}
+  },
+  "history": [
+    {
+      "movieId": 92259,
+      "activity_mode": "speaking",
+      "activity_score": 85.3,
+      "level_before": "Beginner",
+      "level_after": "Intermediate",
+      "enjoyment_rating": null
+    },
+    {
+      "movieId": 6283,
+      "activity_mode": "quiz",
+      "activity_score": 20.0,
+      "level_before": "Intermediate",
+      "level_after": "Beginner",
+      "enjoyment_rating": null
+    },
+    {
+      "movieId": 6283,
+      "activity_mode": "speaking",
+      "activity_score": 70.2,
+      "level_before": "Beginner",
+      "level_after": "Beginner",
+      "enjoyment_rating": null
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "movieId": 7763,
+  "vocabulary_grammar": [
+    {
+      "correct_word": "damage",
+      "options": [
+        "damage",
+        "trauma",
+        "evidence",
+        "stress"
+      ],
+      "source": "word2vec"
+    },
+    {
+      "correct_word": "bother",
+      "options": [
+        "disappoint",
+        "disturb",
+        "interrupt",
+        "bother"
+      ],
+      "source": "word2vec"
+    },
+    {
+      "correct_word": "fridge",
+      "options": [
+        "kitchen",
+        "fridge",
+        "towels",
+        "closet"
+      ],
+      "source": "word2vec"
+    },
+    {
+      "correct_word": "photo",
+      "options": [
+        "picture",
+        "portrait",
+        "photo",
+        "photograph"
+      ],
+      "source": "word2vec"
+    },
+    {
+      "correct_word": "snake",
+      "options": [
+        "bull",
+        "snake",
+        "giant",
+        "lion"
+      ],
+      "source": "word2vec"
+    }
+  ],
+  "quiz": [
+    {
+      "context": "but there might be some ____ to the skull and brain.",
+      "correct_word": "damage",
+      "options": [
+        "trauma",
+        "damage",
+        "evidence",
+        "stress"
+      ],
+      "source": "word2vec"
+    },
+    {
+      "context": "- You work at the ____ theater?",
+      "correct_word": "movie",
+      "options": [
+        "documentary",
+        "movie",
+        "band",
+        "film"
+      ],
+      "source": "word2vec"
+    },
+    {
+      "context": "My New Year's Eve ____ for tonight.",
+      "correct_word": "dress",
+      "options": [
+        "dress",
+        "sweater",
+        "makeup",
+        "bra"
+      ],
+      "source": "word2vec"
+    }
+  ],
+  "speaking_prompt": [
+    {
+      "reference_sentence": "His daughter is in a coma."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    CINEMIX_WHISPER_MODEL=base.en
+
+WORKDIR /app
+
+COPY backend/requirements-speech.txt /app/backend/requirements-speech.txt
+RUN pip install --no-cache-dir -r /app/backend/requirements-speech.txt
+
+COPY backend /app/backend
+
+CMD ["python", "-m", "backend.Speech_TTS_Backend"]

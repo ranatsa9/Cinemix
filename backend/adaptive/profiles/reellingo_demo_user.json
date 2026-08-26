@@ -1,0 +1,66 @@
+{
+  "user_id": "reellingo_demo_user",
+  "current_level": "Beginner",
+  "preferences": {
+    "favorite_genres": [],
+    "enjoyment_ratings": {}
+  },
+  "history": [
+    {
+      "movieId": 79132,
+      "activity_mode": "quiz",
+      "activity_score": 0.0,
+      "level_before": "Beginner",
+      "level_after": "Beginner",
+      "enjoyment_rating": null
+    },
+    {
+      "movieId": 79132,
+      "activity_mode": "quiz",
+      "activity_score": 33.33333333333333,
+      "level_before": "Beginner",
+      "level_after": "Beginner",
+      "enjoyment_rating": null
+    },
+    {
+      "movieId": 79132,
+      "activity_mode": "quiz",
+      "activity_score": 0.0,
+      "level_before": "Beginner",
+      "level_after": "Beginner",
+      "enjoyment_rating": null
+    },
+    {
+      "movieId": 79132,
+      "activity_mode": "quiz",
+      "activity_score": 66.66666666666666,
+      "level_before": "Beginner",
+      "level_after": "Beginner",
+      "enjoyment_rating": null
+    },
+    {
+      "movieId": 79132,
+      "activity_mode": "quiz",
+      "activity_score": 66.66666666666666,
+      "level_before": "Beginner",
+      "level_after": "Beginner",
+      "enjoyment_rating": null
+    },
+    {
+      "movieId": 79132,
+      "activity_mode": "quiz",
+      "activity_score": 33.33333333333333,
+      "level_before": "Beginner",
+      "level_after": "Beginner",
+      "enjoyment_rating": null
+    },
+    {
+      "movieId": 92259,
+      "activity_mode": "quiz",
+      "activity_score": 33.33333333333333,
+      "level_before": "Beginner",
+      "level_after": "Beginner",
+      "enjoyment_rating": null
+    }
+  ]
+}

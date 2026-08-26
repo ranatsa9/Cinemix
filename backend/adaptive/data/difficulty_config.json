@@ -1,0 +1,11 @@
+{
+  "low": 20.9097434209412,
+  "high": 26.3914561604384,
+  "weights": {
+    "difficult_word_ratio": 0.3,
+    "avg_sentence_length": 0.25,
+    "avg_word_length": 0.1,
+    "words_per_minute": 0.15,
+    "vocabulary_diversity": 0.2
+  }
+}
