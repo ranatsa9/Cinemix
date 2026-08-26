@@ -8,6 +8,7 @@ WORKDIR /app
 COPY backend/requirements-main.txt /app/backend/requirements-main.txt
 RUN pip install --no-cache-dir -r /app/backend/requirements-main.txt
 RUN python -m spacy download en_core_web_md
+RUN python -m nltk.downloader averaged_perceptron_tagger_eng
 
 COPY backend /app/backend
 
