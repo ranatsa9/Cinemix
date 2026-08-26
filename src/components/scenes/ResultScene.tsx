@@ -2,13 +2,21 @@
 
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { MagneticButton } from "@/components/motion/MagneticButton";
 import { HeroPosterField } from "@/components/scenes/HeroPosterField";
 import { useExperienceStore } from "@/lib/store/useExperienceStore";
 import { formatMovieTitle } from "@/lib/utils/movieTitle";
 import type { Level, RecommendationResult } from "@/lib/types";
+import {
+  displayLevel,
+  englishReason,
+  fallbackPoster,
+  normalizeLevel,
+  shuffled,
+  strongerLevel,
+} from "@/lib/services/experienceFallbacks";
 
 
 function useCountUp(
@@ -80,6 +88,8 @@ type AdaptiveMovie = {
 
 
 export function ResultScene() {
+  const savedLevel = useExperienceStore((s) => s.level) ?? "beginner";
+  const setLevel = useExperienceStore((s) => s.setLevel);
   const speakingResult =
     useExperienceStore(
       (s) => s.speakingResult
@@ -136,24 +146,36 @@ export function ResultScene() {
     );
 
 
-  const nextRecommendations =
-    (
+  const rawNextRecommendations = (
       adaptiveResult
         ?.next_recommendations ??
       []
     ) as AdaptiveMovie[];
 
+  const nextRecommendations = useMemo(() => {
+    const unique = Array.from(
+      new Map(rawNextRecommendations.map((movie) => [
+        String(movie.movieId ?? movie.movie_id ?? movie.title), movie,
+      ])).values()
+    );
+    return shuffled(unique).slice(0, 3);
+  }, [adaptiveResult]);
 
-  const previousLevel =
-    adaptiveResult
-      ?.level_before ??
-    "Beginner";
 
+  const previousLevelValue = strongerLevel(
+    savedLevel,
+    normalizeLevel(adaptiveResult?.level_before)
+  );
+  const currentLevelValue = strongerLevel(
+    previousLevelValue,
+    normalizeLevel(adaptiveResult?.level_after)
+  );
+  const previousLevel = displayLevel(previousLevelValue);
+  const currentLevel = displayLevel(currentLevelValue);
 
-  const currentLevel =
-    adaptiveResult
-      ?.level_after ??
-    previousLevel;
+  useEffect(() => {
+    if (currentLevelValue !== savedLevel) setLevel(currentLevelValue);
+  }, [currentLevelValue, savedLevel, setLevel]);
 
 
   const activityScore =
@@ -172,12 +194,8 @@ export function ResultScene() {
     const rawId = movie.movieId ?? movie.movie_id;
     if (rawId === undefined) return;
 
-    const normalizedLevel = String(movie.language_level ?? "intermediate").toLowerCase();
-    const levelFit: Level = normalizedLevel.includes("beginner")
-      ? "beginner"
-      : normalizedLevel.includes("advanced")
-        ? "advanced"
-        : "intermediate";
+    const levelFit: Level = normalizeLevel(movie.language_level ?? currentLevelValue);
+    const reason = englishReason(movie.recommendation_reason, levelFit, movie.main_genre);
 
     const recommendation: RecommendationResult = {
       movie: {
@@ -188,17 +206,17 @@ export function ResultScene() {
         levelFit: [levelFit],
         dialogueComplexity: levelFit === "beginner" ? 2 : levelFit === "advanced" ? 5 : 3,
         pace: 3,
-        posterUrl: movie.poster_url ?? "/movies/inception.jpg",
-        backdropUrl: movie.poster_url,
+        posterUrl: movie.poster_url ?? fallbackPoster(rawId),
+        backdropUrl: movie.poster_url ?? fallbackPoster(rawId, 1),
         palette: ["#171223", "#d7ad63"],
-        logline: movie.recommendation_reason ?? "Selected from your updated learning profile.",
+        logline: reason,
         runtime: 0,
       },
       matchPercent: typeof movie.hybrid_score === "number"
         ? Math.round(movie.hybrid_score * 100)
         : 0,
       traits: [{ label: "Adaptive match" }, { label: `${levelFit} English` }],
-      reason: movie.recommendation_reason ?? "Chosen using your latest activity result.",
+      reason,
     };
 
     setRecommendation(recommendation);
@@ -827,11 +845,11 @@ export function ResultScene() {
 
                             <div className="relative aspect-[2/3] overflow-hidden rounded-2xl border border-porcelain/10 bg-porcelain/[0.03] shadow-2xl shadow-black/30">
 
-                              {movie.poster_url ? (
+                              {(movie.poster_url || fallbackPoster(movie.movieId ?? movie.movie_id, index)) ? (
 
                                 <Image
                                   src={
-                                    movie.poster_url
+                                    movie.poster_url ?? fallbackPoster(movie.movieId ?? movie.movie_id, index)
                                   }
 
                                   alt={

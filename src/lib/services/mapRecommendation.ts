@@ -1,6 +1,7 @@
 import { RecommendationItem } from "@/lib/api";
 import { MatchTrait, RecommendationResult } from "@/lib/types";
 import { formatMovieTitle } from "@/lib/utils/movieTitle";
+import { englishReason, normalizeLevel } from "@/lib/services/experienceFallbacks";
 
 const FALLBACK_PALETTE: [string, string] = ["#f2c879", "#10142a"];
 
@@ -53,6 +54,9 @@ export function mapBackendRecommendation(
 
     traits: buildTraits(item),
 
-    reason: item.recommendation_reason,
+    reason: englishReason(
+      item.recommendation_reason,
+      normalizeLevel("intermediate")
+    ),
   };
 }

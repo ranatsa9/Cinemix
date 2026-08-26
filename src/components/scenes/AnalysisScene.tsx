@@ -34,6 +34,7 @@ import {
 import {
   formatMovieTitle,
 } from "@/lib/utils/movieTitle";
+import { shuffled } from "@/lib/services/experienceFallbacks";
 
 
 const STAGE_DURATION = 1650;
@@ -147,7 +148,7 @@ export function AnalysisScene() {
         if (!mounted) return;
 
 
-        const realMovies: Movie[] =
+        const realMovies: Movie[] = shuffled(
           catalogueResponse.movies.map(
             (item) => ({
               id: String(
@@ -183,7 +184,8 @@ export function AnalysisScene() {
               runtime:
                 item.runtime ?? 0,
             })
-          );
+          )
+        );
 
 
         setPool(realMovies);

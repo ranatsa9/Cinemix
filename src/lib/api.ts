@@ -284,6 +284,8 @@ export type AdaptiveVocabularyItem = {
 
   context?: string;
 
+  meaning?: string;
+
   source?: string;
 };
 

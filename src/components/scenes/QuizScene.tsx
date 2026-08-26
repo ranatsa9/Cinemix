@@ -5,9 +5,12 @@ import { useEffect, useMemo, useState } from "react";
 
 import {
   getAdaptiveActivity,
+  getAdaptiveVocabulary,
   updateAdaptiveLearning,
   type AdaptiveQuizItem,
 } from "@/lib/api";
+import { getVocabularyForMovie } from "@/lib/mockData/vocabulary";
+import { shuffled } from "@/lib/services/experienceFallbacks";
 
 import { useExperienceStore } from "@/lib/store/useExperienceStore";
 import { HeroPosterField } from "@/components/scenes/HeroPosterField";
@@ -84,6 +87,27 @@ function mapAdaptiveQuestion(
   };
 }
 
+function buildFallbackQuiz(
+  movieId: number,
+  remoteWords: AdaptiveQuizItem[] = []
+): AdaptiveQuizItem[] {
+  const local = getVocabularyForMovie(String(movieId)).map((item) => ({
+    correct_word: item.phrase,
+    options: [] as string[],
+    context: item.example,
+    source: "curated-fallback",
+  }));
+  const source = remoteWords.length >= 3 ? remoteWords : local;
+  const words = source.map((item) => item.correct_word);
+  return source.slice(0, 3).map((item) => ({
+    ...item,
+    options: shuffled([
+      item.correct_word,
+      ...words.filter((word) => word !== item.correct_word),
+    ]).slice(0, 4),
+  }));
+}
+
 
 export function QuizScene() {
   const recommendation = useExperienceStore(
@@ -92,10 +116,6 @@ export function QuizScene() {
 
   const setQuizResult = useExperienceStore(
     (s) => s.setQuizResult
-  );
-
-  const setLevel = useExperienceStore(
-    (s) => s.setLevel
   );
 
   const setAdaptiveResult = useExperienceStore(
@@ -158,17 +178,10 @@ export function QuizScene() {
 
         if (!mounted) return;
 
-        if (
-          !activity.quiz ||
-          activity.quiz.length === 0
-        ) {
-          throw new Error(
-            "No quiz available for this movie"
-          );
-        }
-
         setAdaptiveQuiz(
-          activity.quiz
+          activity.quiz?.length
+            ? activity.quiz
+            : buildFallbackQuiz(movieId)
         );
 
       } catch (error) {
@@ -179,9 +192,21 @@ export function QuizScene() {
 
         if (!mounted) return;
 
-        setLoadError(
-          "Could not load the quiz for this movie."
-        );
+        try {
+          const movieId = Number(recommendation?.movie.id);
+          const vocabulary = Number.isFinite(movieId)
+            ? await getAdaptiveVocabulary(movieId)
+            : { vocabulary: [] };
+          if (!mounted) return;
+          setAdaptiveQuiz(
+            buildFallbackQuiz(movieId, vocabulary.vocabulary ?? [])
+          );
+          setLoadError(null);
+        } catch {
+          const movieId = Number(recommendation?.movie.id) || 0;
+          setAdaptiveQuiz(buildFallbackQuiz(movieId));
+          setLoadError(null);
+        }
 
       } finally {
         if (mounted) {
@@ -276,20 +301,8 @@ export function QuizScene() {
           adaptiveResult
         );
 
-        const newLevel =
-          adaptiveResult
-            .level_after
-            .toLowerCase();
-
-        if (
-          newLevel === "beginner" ||
-          newLevel === "intermediate" ||
-          newLevel === "advanced"
-        ) {
-          setLevel(
-            newLevel
-          );
-        }
+        // ResultScene reconciles this response with the learner's saved
+        // placement level, so a single activity cannot accidentally downgrade it.
       })
       .catch((error) => {
         console.error(

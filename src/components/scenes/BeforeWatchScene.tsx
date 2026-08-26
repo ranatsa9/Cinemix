@@ -13,6 +13,8 @@ import { HeroPosterField } from "@/components/scenes/HeroPosterField";
 
 import { useExperienceStore } from "@/lib/store/useExperienceStore";
 import { cn } from "@/lib/utils";
+import { getVocabularyForMovie } from "@/lib/mockData/vocabulary";
+import { vocabularyMeaning } from "@/lib/services/experienceFallbacks";
 
 type Step =
   | { kind: "intro"; line: string }
@@ -84,9 +86,17 @@ export function BeforeWatchScene() {
 
         if (!mounted) return;
 
-        setLoadError(
-          "Could not load vocabulary for this movie."
-        );
+        const fallback = getVocabularyForMovie(
+          String(recommendation?.movie.id ?? "default")
+        ).map((item) => ({
+          correct_word: item.phrase,
+          options: [item.phrase],
+          context: item.example,
+          meaning: item.meaning,
+          source: "curated-fallback",
+        }));
+        setVocab(fallback);
+        setLoadError(null);
 
       } finally {
         if (mounted) {
@@ -289,6 +299,11 @@ export function BeforeWatchScene() {
                     step.index
                   ].correct_word
                 }
+              </p>
+
+              <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-porcelain-dim">
+                {vocab[step.index].meaning ??
+                  vocabularyMeaning(vocab[step.index].correct_word)}
               </p>
 
               {vocab[step.index].context && (
