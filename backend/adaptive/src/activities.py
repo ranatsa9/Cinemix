@@ -68,8 +68,18 @@ def load_vocabulary_with_context(movie_id):
     return _context_cache.get(str(movie_id))
 
 
+# Two routers call this at import time. Without the cache the model is loaded
+# twice on every cold start, which pushes startup past the healthcheck window.
+_model_cache = None
+
+
 def load_word2vec_model():
-    return Word2Vec.load(str(WORD2VEC_FILE))
+    global _model_cache
+
+    if _model_cache is None:
+        _model_cache = Word2Vec.load(str(WORD2VEC_FILE))
+
+    return _model_cache
 
 
 def _same_part_of_speech(word, candidates):
