@@ -178,12 +178,10 @@ export function ResultScene() {
   }, [currentLevelValue, savedLevel, setLevel]);
 
 
-  const activityScore =
-    adaptiveResult
-      ? Math.round(
-          adaptiveResult.activity_score
-        )
-      : overall;
+  // One score, one source. The headline used the locally computed value
+  // while the summary card used the backend value, so the same activity
+  // could show two different numbers.
+  const activityScore = overall;
 
 
   const levelChanged =

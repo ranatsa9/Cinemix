@@ -263,9 +263,19 @@ export function AnalysisScene() {
         if (!mounted) return;
 
 
-        const top =
+        // Picking index 0 every time made the same film appear on every
+        // run, because the ranking is deterministic for identical input.
+        const pool =
           recommendationResponse
-            .recommendations?.[0];
+            .recommendations ?? [];
+
+        const top =
+          pool[
+            Math.floor(
+              Math.random() *
+                Math.min(3, pool.length)
+            )
+          ];
 
 
         if (top) {

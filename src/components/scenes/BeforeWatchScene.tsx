@@ -306,14 +306,28 @@ export function BeforeWatchScene() {
                   vocabularyMeaning(vocab[step.index].correct_word)}
               </p>
 
-              {vocab[step.index].context && (
-                <div className="mt-7 rounded-2xl border border-porcelain/10 bg-porcelain/[0.04] px-6 py-5">
+              {vocab[step.index].options && (
+                <div className="mt-7">
                   <p className="text-[10px] uppercase tracking-[0.35em] text-porcelain-dim">
-                    From this movie&apos;s dialogue
+                    Related words
                   </p>
-                  <p className="mt-3 font-display text-xl leading-relaxed text-porcelain/85">
-                    &ldquo;{vocab[step.index].context}&rdquo;
-                  </p>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                    {vocab[step.index].options
+                      .filter(
+                        (word) =>
+                          word !== vocab[step.index].correct_word
+                      )
+                      .slice(0, 3)
+                      .map((word) => (
+                        <span
+                          key={word}
+                          className="rounded-full border border-porcelain/15 bg-porcelain/[0.06] px-5 py-2.5 text-sm text-porcelain/80"
+                        >
+                          {word}
+                        </span>
+                      ))}
+                  </div>
                 </div>
               )}
 
