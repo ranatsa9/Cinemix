@@ -1,12 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-try:
-    import nltk
-    nltk.download("averaged_perceptron_tagger_eng", quiet=True)
-except Exception:
-    pass
-
 from backend.routers.health import router as health_router
 from backend.routers.users import router as users_router
 from backend.routers.recommend import router as recommend_router
