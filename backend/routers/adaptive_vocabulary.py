@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from backend.adaptive.src.activities import (
     load_vocabulary_for_movie,
+    load_vocabulary_with_context,
     load_word2vec_model,
     get_distractors,
 )
@@ -27,7 +28,10 @@ LOW_VALUE_WORDS = {
 @router.get("/adaptive/vocabulary/{movie_id}")
 def get_adaptive_vocabulary(movie_id: int):
     try:
-        vocabulary = load_vocabulary_for_movie(movie_id)
+        vocabulary = (
+            load_vocabulary_with_context(movie_id)
+            or load_vocabulary_for_movie(movie_id)
+        )
 
         if not vocabulary:
             raise HTTPException(
@@ -83,9 +87,8 @@ def get_adaptive_vocabulary(movie_id: int):
                     "options": options,
                     "source": source,
                     "context": (
-                        matching_lines[0]
-                        if matching_lines
-                        else None
+                        item.get("context")
+                        or (matching_lines[0] if matching_lines else None)
                     ),
                 }
             )
