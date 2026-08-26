@@ -10,7 +10,11 @@ SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
 
 
 def get_subtitle_text(movie_id):
-    
+    # The large subtitle corpus is excluded from the production image. A
+    # vocabulary preview can still work without an example line.
+    if not SUBTITLES_FILE.exists():
+        return None
+
     movie_id_str = str(movie_id)
 
     with open(SUBTITLES_FILE, "r", encoding="utf-8", newline="") as f:

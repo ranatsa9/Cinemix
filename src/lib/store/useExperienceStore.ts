@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 import {
   GenreId,
@@ -137,8 +138,8 @@ const initial = {
 
 
 export const useExperienceStore =
-  create<ExperienceState>(
-    (set, get) => ({
+  create<ExperienceState>()(
+    persist((set, get) => ({
       ...initial,
 
 
@@ -390,9 +391,6 @@ export const useExperienceStore =
             quizResult:
               null,
 
-            adaptiveResult:
-              null,
-
             recordingSeconds:
               0,
 
@@ -405,5 +403,17 @@ export const useExperienceStore =
             ],
           })
         ),
+    }), {
+      name: "cinemix-learning-progress",
+      partialize: (state) => ({
+        level: state.level,
+        goal: state.goal,
+        genreIds: state.genreIds,
+        selectedMovieIds: state.selectedMovieIds,
+        recommendation: state.recommendation,
+        speakingResult: state.speakingResult,
+        quizResult: state.quizResult,
+        adaptiveResult: state.adaptiveResult,
+      }),
     })
   );

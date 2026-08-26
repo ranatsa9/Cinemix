@@ -8,6 +8,7 @@ import { MagneticButton } from "@/components/motion/MagneticButton";
 import { HeroPosterField } from "@/components/scenes/HeroPosterField";
 import { useExperienceStore } from "@/lib/store/useExperienceStore";
 import { formatMovieTitle } from "@/lib/utils/movieTitle";
+import type { Level, RecommendationResult } from "@/lib/types";
 
 
 function useCountUp(
@@ -99,6 +100,14 @@ export function ResultScene() {
       (s) => s.findNextMovie
     );
 
+  const setRecommendation = useExperienceStore(
+    (s) => s.setRecommendation
+  );
+
+  const goTo = useExperienceStore(
+    (s) => s.goTo
+  );
+
 
   const [activePanel, setActivePanel] =
     useState<
@@ -158,6 +167,43 @@ export function ResultScene() {
   const levelChanged =
     previousLevel !==
     currentLevel;
+
+  const chooseNextMovie = (movie: AdaptiveMovie) => {
+    const rawId = movie.movieId ?? movie.movie_id;
+    if (rawId === undefined) return;
+
+    const normalizedLevel = String(movie.language_level ?? "intermediate").toLowerCase();
+    const levelFit: Level = normalizedLevel.includes("beginner")
+      ? "beginner"
+      : normalizedLevel.includes("advanced")
+        ? "advanced"
+        : "intermediate";
+
+    const recommendation: RecommendationResult = {
+      movie: {
+        id: String(rawId),
+        title: formatMovieTitle(movie.title ?? "Your next movie"),
+        year: movie.year ?? new Date().getFullYear(),
+        genres: [],
+        levelFit: [levelFit],
+        dialogueComplexity: levelFit === "beginner" ? 2 : levelFit === "advanced" ? 5 : 3,
+        pace: 3,
+        posterUrl: movie.poster_url ?? "/movies/inception.jpg",
+        backdropUrl: movie.poster_url,
+        palette: ["#171223", "#d7ad63"],
+        logline: movie.recommendation_reason ?? "Selected from your updated learning profile.",
+        runtime: 0,
+      },
+      matchPercent: typeof movie.hybrid_score === "number"
+        ? Math.round(movie.hybrid_score * 100)
+        : 0,
+      traits: [{ label: "Adaptive match" }, { label: `${levelFit} English` }],
+      reason: movie.recommendation_reason ?? "Chosen using your latest activity result.",
+    };
+
+    setRecommendation(recommendation);
+    goTo("match");
+  };
 
 
   return (
@@ -615,6 +661,10 @@ export function ResultScene() {
                       : `You’re holding steady at ${currentLevel}. Cinemix will keep adjusting the challenge.`}
                   </motion.p>
 
+                  <p className="mt-3 text-[10px] uppercase tracking-[0.25em] text-gold/55">
+                    Saved on this device
+                  </p>
+
                 </div>
 
               )}
@@ -669,6 +719,10 @@ export function ResultScene() {
 
               <p className="relative mb-8 text-xs uppercase tracking-[0.45em] text-gold">
                 Your Next Matches
+              </p>
+
+              <p className="relative -mt-4 mb-8 text-sm text-porcelain-dim">
+                Choose a movie to open its match details and continue your learning path.
               </p>
 
 
@@ -729,6 +783,8 @@ export function ResultScene() {
 
                           <motion.button
                             type="button"
+
+                            onClick={() => chooseNextMovie(movie)}
 
                             key={
                               movie.movieId ??

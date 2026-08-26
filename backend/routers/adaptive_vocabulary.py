@@ -48,6 +48,9 @@ def get_adaptive_vocabulary(movie_id: int):
             and item["word"].lower() not in LOW_VALUE_WORDS
         ]
 
+        if not candidates:
+            candidates = vocabulary
+
         # Prefer richer words while keeping the original data as the source.
         candidates.sort(
             key=lambda item: len(item["word"]),

@@ -10,35 +10,18 @@ export async function estimateLevel(
 ): Promise<Level> {
   await new Promise((resolve) => setTimeout(resolve, 1400));
 
-  const weighted = answers.reduce((sum, a) => {
-    if (!a.correct) return sum;
-    return sum + a.difficulty;
-  }, 0);
-
-  const maxPossible = answers.reduce((sum, a) => sum + a.difficulty, 0);
-  const ratio = maxPossible === 0 ? 0 : weighted / maxPossible;
-
+  const totalCorrect = answers.filter((answer) => answer.correct).length;
   const advancedAnswers = answers.filter((answer) => answer.difficulty === 5);
-  const foundationAnswers = answers.filter((answer) => answer.difficulty <= 2);
+  const intermediateAnswers = answers.filter((answer) => answer.difficulty === 3);
   const correctIn = (group: LevelTestAnswer[]) =>
     group.filter((answer) => answer.correct).length;
 
-  // Easy points alone cannot produce an Advanced result.
-  if (
-    ratio >= 0.68 &&
-    correctIn(advancedAnswers) >= 2
-  ) {
+  if (totalCorrect >= 8 && correctIn(advancedAnswers) >= 2) {
     return "advanced";
   }
-
-  const beyondFoundation = answers.filter(
-    (answer) => answer.difficulty >= 3
-  );
-
   if (
-    ratio >= 0.3 &&
-    correctIn(foundationAnswers) >= 2 &&
-    correctIn(beyondFoundation) >= 2
+    totalCorrect >= 5 &&
+    correctIn([...intermediateAnswers, ...advancedAnswers]) >= 2
   ) {
     return "intermediate";
   }
