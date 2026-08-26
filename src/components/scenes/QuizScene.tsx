@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 type UiChoice = {
   id: string;
   text: string;
+  word: string;
 };
 
 type UiQuestion = {
@@ -59,23 +60,39 @@ function mapAdaptiveQuestion(
   item: AdaptiveQuizItem,
   index: number
 ): UiQuestion {
+  // A meaning question only works when every option has its own definition.
+  // vocabularyMeaning() returns the same generic sentence for unknown words,
+  // which would render four identical answers.
+  const meanings = item.options.map(
+    (option) => vocabularyMeaning(option)
+  );
+
+  const meaningsAreDistinct =
+    new Set(meanings).size === meanings.length;
+
   const choices: UiChoice[] = item.options.map(
     (option, optionIndex) => ({
       id: `q${index}-c${optionIndex}`,
-      text: option,
+      text: meaningsAreDistinct
+        ? meanings[optionIndex]
+        : option,
+      word: option,
     })
   );
 
   const correctChoice = choices.find(
-    (choice) => choice.text === item.correct_word
+    (choice) => choice.word === item.correct_word
   );
 
   return {
     id: `q${index}`,
 
-    prompt:
-      item.context ||
-      `Choose the correct word: "${item.correct_word}"`,
+    // Ask what the word means when definitions are available; otherwise fall
+    // back to the masked sentence rather than showing four identical options.
+    prompt: meaningsAreDistinct
+      ? `What does "${item.correct_word}" mean?`
+      : item.context ||
+        `Choose the correct word: "${item.correct_word}"`,
 
     choices,
 
@@ -99,7 +116,8 @@ function buildFallbackQuiz(
   }));
   const source = remoteWords.length >= 3 ? remoteWords : local;
   const words = source.map((item) => item.correct_word);
-  return source.slice(0, 3).map((item) => ({
+
+  return source.slice(0, 5).map((item) => ({
     ...item,
     options: shuffled([
       item.correct_word,
