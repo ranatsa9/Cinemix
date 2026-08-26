@@ -3,7 +3,14 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { MagneticButton } from "@/components/motion/MagneticButton";
-import { estimateLevel, levelCopy } from "@/lib/services/levelAssessment";
+import {
+  areaLabel,
+  buildAreaBreakdown,
+  cefrCopy,
+  estimateLevel,
+  levelCopy,
+  overallCefr,
+} from "@/lib/services/levelAssessment";
 import { useExperienceStore } from "@/lib/store/useExperienceStore";
 import { Level } from "@/lib/types";
 import { HeroPosterField } from "@/components/scenes/HeroPosterField";
@@ -135,6 +142,15 @@ export function LevelRevealScene() {
             </motion.h1>
 
             <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.9 }}
+              className="-mt-4 text-sm uppercase tracking-[0.45em] text-gold"
+            >
+              CEFR {overallCefr(answers)}
+            </motion.p>
+
+            <motion.p
               initial={{
                 opacity: 0,
                 y: 10,
@@ -152,6 +168,68 @@ export function LevelRevealScene() {
               {levelCopy[level].description}
             </motion.p>
 
+            {/* =========================================
+                FOUR-AREA BREAKDOWN
+
+                The level is no longer a single number from a
+                reading test. Each area is shown separately so
+                the learner can see which skill is holding
+                them back.
+            ========================================= */}
+
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9, duration: 0.9 }}
+              className="w-full max-w-lg"
+            >
+              <p className="mb-5 text-[10px] uppercase tracking-[0.45em] text-porcelain-dim">
+                Across all four skills
+              </p>
+
+              <div className="flex flex-col gap-3.5">
+                {buildAreaBreakdown(answers).map((entry, i) => (
+                  <motion.div
+                    key={entry.area}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      delay: 1.0 + i * 0.12,
+                      duration: 0.6,
+                    }}
+                    className="flex items-center gap-4"
+                  >
+                    <span className="w-24 shrink-0 text-left text-[11px] uppercase tracking-[0.2em] text-porcelain-dim">
+                      {areaLabel[entry.area]}
+                    </span>
+
+                    <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-porcelain/10">
+                      <motion.span
+                        initial={{ width: 0 }}
+                        animate={{
+                          width: `${entry.attempted ? entry.score : 0}%`,
+                        }}
+                        transition={{
+                          delay: 1.15 + i * 0.12,
+                          duration: 0.9,
+                          ease: [0.16, 1, 0.3, 1],
+                        }}
+                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-gold/60 to-gold"
+                      />
+                    </span>
+
+                    <span className="w-9 shrink-0 text-right text-[11px] tracking-[0.15em] text-gold">
+                      {entry.attempted ? entry.cefr : "--"}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+
+              <p className="mt-5 text-left text-[12px] leading-relaxed text-porcelain/50">
+                {cefrCopy[overallCefr(answers)]}
+              </p>
+            </motion.div>
+
             <motion.div
               initial={{
                 opacity: 0,
@@ -162,7 +240,7 @@ export function LevelRevealScene() {
                 y: 0,
               }}
               transition={{
-                delay: 1.1,
+                delay: 1.6,
                 duration: 0.9,
               }}
             >

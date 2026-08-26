@@ -639,3 +639,57 @@ export async function updateAdaptiveLearning(
 
   return response.json();
 }
+
+
+/* =========================================================
+   MOVIE AUDIO CLIPS
+
+   Real spoken excerpts from the films, served by the speech
+   backend. Used by the listening question in the placement
+   test and by the reference player in speaking practice.
+   Falls back to TTS when a clip is not available.
+========================================================= */
+
+export type MovieClip = {
+  clipId: string;
+  movieId: string;
+  movieTitle: string;
+  text: string;
+  file: string;
+  seconds?: number;
+};
+
+export async function listMovieClips(): Promise<{
+  count: number;
+  clips: MovieClip[];
+}> {
+  const response = await fetch(
+    `${SPEECH_API_URL}/api/clips`
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Failed to load movie clips"
+    );
+  }
+
+  return response.json();
+}
+
+export async function getMovieClip(
+  clipId: string
+): Promise<Blob> {
+  const response = await fetch(
+    `${SPEECH_API_URL}/api/clip?clipId=${encodeURIComponent(
+      clipId
+    )}`
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "No movie clip for this line"
+    );
+  }
+
+  return response.blob();
+}

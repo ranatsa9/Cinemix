@@ -29,6 +29,12 @@ import {
   updateAdaptiveLearning,
 } from "@/lib/api";
 
+import {
+  calculateWordMatch,
+  canPractiseAsSingleWord,
+  type WordMatchResult,
+} from "@/lib/utils/wordMatch";
+
 /* =========================================================
    WAVEFORM
 ========================================================= */
@@ -57,79 +63,10 @@ function getLevelLabel(
    WORD MATCH
 ========================================================= */
 
-type WordMatchResult = {
-  score: number;
-  matched: string[];
-  missing: string[];
-  extra: string[];
-};
-
-function normalizeWord(word: string) {
-  return word
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}']/gu, "")
-    .trim();
-}
-
-function canPractiseAsSingleWord(word: string) {
-  // Very short function words such as "did", "a", and "to" are
-  // unreliable without sentence context in automatic transcription.
-  return normalizeWord(word).length >= 4;
-}
-
-function calculateWordMatch(
-  expectedText: string,
-  spokenText: string
-): WordMatchResult {
-  const expectedWords = expectedText
-    .split(/\s+/)
-    .map(normalizeWord)
-    .filter(Boolean);
-
-  const spokenWords = spokenText
-    .split(/\s+/)
-    .map(normalizeWord)
-    .filter(Boolean);
-
-  const remainingSpoken = [...spokenWords];
-
-  const matched: string[] = [];
-  const missing: string[] = [];
-
-  for (const expectedWord of expectedWords) {
-    const index =
-      remainingSpoken.indexOf(expectedWord);
-
-    if (index !== -1) {
-      matched.push(expectedWord);
-
-      remainingSpoken.splice(
-        index,
-        1
-      );
-    } else {
-      missing.push(expectedWord);
-    }
-  }
-
-  const extra = remainingSpoken;
-
-  const score =
-    expectedWords.length > 0
-      ? Math.round(
-          (matched.length /
-            expectedWords.length) *
-            100
-        )
-      : 0;
-
-  return {
-    score,
-    matched,
-    missing,
-    extra,
-  };
-}
+/*
+ * Word matching now lives in a shared module so the placement
+ * test scores its speaking question exactly the same way.
+ */
 
 /* =========================================================
    COACH FEEDBACK
@@ -541,12 +478,14 @@ export function SpeakingScene() {
 
         return calculateWordMatch(
           activeExpectedText,
-          transcript
+          transcript,
+          practiceMode
         );
       },
       [
         activeExpectedText,
         transcript,
+        practiceMode,
       ]
     );
 
@@ -554,9 +493,11 @@ export function SpeakingScene() {
     wordMatch
       ? practiceMode === "word"
         ? wordMatch.score === 100
-          ? `Great — “${focusWord}” was recognized. You can return to the full line.`
-          : focusedAttempts >= 3
-          ? `You tried “${focusWord}” three times. Keep practising or move on and revisit it later.`
+          ? wordMatch.approximate
+            ? `Close enough — “${focusWord}” came through. Say it once more for a cleaner ending, or return to the full line.`
+            : `Great — “${focusWord}” was recognized. You can return to the full line.`
+          : focusedAttempts >= 2
+          ? `You tried “${focusWord}” twice. Keep practising or move on and revisit it later.`
           : `Listen to “${focusWord}”, then try only that word again.`
         : getCoachFeedback(wordMatch)
       : "";
@@ -1060,9 +1001,19 @@ export function SpeakingScene() {
               );
 
               if (practiceMode === "word") {
+                if (!result.transcript.trim()) {
+                  // Silence is a microphone problem, not a
+                  // pronunciation mistake. Say so instead of
+                  // rendering an empty result panel.
+                  setTranscriptionError(
+                    "We didn't catch any sound. Hold the button, wait half a second, then say the word."
+                  );
+                }
+
                 const focusedResult = calculateWordMatch(
                   activeExpectedText,
-                  result.transcript
+                  result.transcript,
+                  "word"
                 );
 
                 setFocusedAttempts((previous) =>
@@ -2963,7 +2914,7 @@ export function SpeakingScene() {
                         </button>
                       )}
 
-                      {focusedAttempts >= 3 && wordMatch.score < 100 && (
+                      {focusedAttempts >= 2 && wordMatch.score < 100 && (
                         <button
                           type="button"
                           onClick={moveOnFromWord}

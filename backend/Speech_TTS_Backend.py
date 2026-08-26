@@ -102,6 +102,63 @@ def get_recommender():
 
 
 # =========================================================
+# MOVIE AUDIO CLIPS
+# =========================================================
+
+CLIPS_DIR = (
+    ROOT /
+    "clips"
+)
+
+_clip_manifest = None
+
+
+def get_clip_manifest():
+    """
+    Load clips/manifest.json once.
+
+    Each entry is a short spoken excerpt taken from the
+    film itself, so the learner hears the real delivery
+    instead of a synthetic voice. Missing manifest is not
+    an error: the app falls back to TTS.
+    """
+
+    global _clip_manifest
+
+    if _clip_manifest is not None:
+        return _clip_manifest
+
+    manifest_path = (
+        CLIPS_DIR /
+        "manifest.json"
+    )
+
+    if not manifest_path.exists():
+
+        _clip_manifest = {}
+
+        return _clip_manifest
+
+    with manifest_path.open(
+        encoding="utf-8",
+    ) as source:
+
+        raw = json.load(source)
+
+    _clip_manifest = {
+        str(
+            entry["clipId"]
+        ): entry
+        for entry in raw.get(
+            "clips",
+            [],
+        )
+    }
+
+    return _clip_manifest
+
+
+# =========================================================
 # PRACTICE LINES
 # =========================================================
 
@@ -684,6 +741,91 @@ class ReelLingoHandler(
             return
 
         # -------------------------------------------------
+        # MOVIE AUDIO CLIPS
+        # -------------------------------------------------
+
+        if (
+            parsed.path ==
+            "/api/clips"
+        ):
+
+            self.send_json(
+                200,
+                {
+                    "count": len(
+                        get_clip_manifest()
+                    ),
+
+                    "clips": list(
+                        get_clip_manifest()
+                        .values()
+                    ),
+                },
+            )
+
+            return
+
+        if (
+            parsed.path ==
+            "/api/clip"
+        ):
+
+            clip_id = str(
+                parse_qs(
+                    parsed.query
+                ).get(
+                    "clipId",
+                    [""],
+                )[0]
+            ).strip()
+
+            entry = (
+                get_clip_manifest()
+                .get(clip_id)
+            )
+
+            if not entry:
+
+                self.send_json(
+                    404,
+                    {
+                        "error":
+                            (
+                                "No movie clip "
+                                "for this id."
+                            )
+                    },
+                )
+
+                return
+
+            audio_path = (
+                CLIPS_DIR /
+                entry["file"]
+            )
+
+            if not audio_path.exists():
+
+                self.send_json(
+                    404,
+                    {
+                        "error":
+                            (
+                                "Clip file is "
+                                "missing on disk."
+                            )
+                    },
+                )
+
+                return
+
+            self.send_audio(
+                audio_path.read_bytes()
+            )
+
+            return
+
+        # -------------------------------------------------
         # FALLBACK
         # -------------------------------------------------
 
@@ -840,36 +982,75 @@ class ReelLingoHandler(
                         recording.name
                     )
 
+                is_word_mode = (
+                    exercise_mode
+                    .strip()
+                    .lower()
+                    == "word"
+                )
+
+                # A single word is usually under one second of
+                # audio. The VAD front-end treats that as silence
+                # and Whisper then returns an empty transcript,
+                # which is what made single-word practice look
+                # broken. For word mode we disable the VAD, allow
+                # temperature fallback, and make the no-speech
+                # test far more permissive.
+                transcribe_options = {
+                    "language": "en",
+
+                    "task": "transcribe",
+
+                    "beam_size": 5,
+
+                    "condition_on_previous_text": False,
+
+                    # Do not feed the expected answer back into
+                    # Whisper. Doing so can make the recognizer
+                    # "correct" a different spoken word into the
+                    # target word and create a false 100% score.
+                    # The expected text is used only by the word
+                    # matcher in the frontend after unbiased
+                    # transcription.
+                    "initial_prompt": None,
+
+                    "hotwords": None,
+                }
+
+                if is_word_mode:
+
+                    transcribe_options.update(
+                        {
+                            "vad_filter": False,
+
+                            "best_of": 5,
+
+                            "temperature": [
+                                0.0,
+                                0.2,
+                                0.4,
+                                0.6,
+                            ],
+
+                            "no_speech_threshold": 0.95,
+
+                            "compression_ratio_threshold": None,
+
+                            "log_prob_threshold": None,
+                        }
+                    )
+
+                else:
+
+                    transcribe_options[
+                        "vad_filter"
+                    ] = True
+
                 segments, info = (
                     get_model()
                     .transcribe(
                         temp_path,
-
-                        language=
-                            "en",
-
-                        task=
-                            "transcribe",
-
-                        beam_size=
-                            5,
-
-                        vad_filter=
-                            True,
-
-                        condition_on_previous_text=
-                            False,
-
-                        # Do not feed the expected answer back into
-                        # Whisper. Doing so can make the recognizer
-                        # "correct" a different spoken word into the
-                        # target word and create a false 100% score.
-                        # The expected text is used only by the exact
-                        # word matcher in the frontend after unbiased
-                        # transcription.
-                        initial_prompt=None,
-
-                        hotwords=None,
+                        **transcribe_options,
                     )
                 )
 
@@ -882,6 +1063,52 @@ class ReelLingoHandler(
                     for segment
                     in segment_list
                 ).strip()
+
+                # Second pass. If word mode still produced
+                # nothing, retry greedily with no thresholds at
+                # all rather than returning an empty string to
+                # the learner.
+                if (
+                    is_word_mode
+                    and not transcript
+                ):
+
+                    segments, info = (
+                        get_model()
+                        .transcribe(
+                            temp_path,
+
+                            language="en",
+
+                            task="transcribe",
+
+                            beam_size=1,
+
+                            vad_filter=False,
+
+                            condition_on_previous_text=False,
+
+                            no_speech_threshold=None,
+
+                            compression_ratio_threshold=None,
+
+                            log_prob_threshold=None,
+
+                            initial_prompt=None,
+
+                            hotwords=None,
+                        )
+                    )
+
+                    segment_list = list(
+                        segments
+                    )
+
+                    transcript = " ".join(
+                        segment.text.strip()
+                        for segment
+                        in segment_list
+                    ).strip()
 
                 duration = max(
                     (
@@ -916,6 +1143,17 @@ class ReelLingoHandler(
 
                         "model":
                             MODEL_SIZE,
+
+                        "exerciseMode":
+                            "word"
+                            if is_word_mode
+                            else "line",
+
+                        # False means the microphone captured
+                        # nothing usable, which is a different
+                        # problem from saying the wrong word.
+                        "heardSpeech":
+                            bool(transcript),
                     },
                 )
 
