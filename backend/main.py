@@ -1,6 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+try:
+    import nltk
+    nltk.download("averaged_perceptron_tagger_eng", quiet=True)
+except Exception:
+    pass
 
 from backend.routers.health import router as health_router
 from backend.routers.users import router as users_router
@@ -14,6 +19,8 @@ from backend.routers.adaptive_vocabulary import router as adaptive_vocabulary_ro
 
 from backend.config import FRONTEND_URLS
 from backend.database import create_tables
+
+
 
 
 app = FastAPI()
