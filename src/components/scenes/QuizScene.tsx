@@ -58,6 +58,42 @@ function renderPrompt(prompt: string) {
   );
 }
 
+const CLOZE_PATTERNS: Record<string, RegExp> = {
+  "make a scene": /\b(?:make|makes|made|making)\s+(?:a\s+)?scene\b/i,
+  "catch someone off guard":
+    /\b(?:catch|catches|caught|catching)\s+(?:(?:someone|somebody|him|her|them|me|you|us)\s+)?off\s+guard\b/i,
+  "figure it out":
+    /\b(?:figure|figures|figured|figuring)\s+(?:it|this|that|them)\s+out\b/i,
+  "hang in there": /\b(?:hang|hangs|hung|hanging)\s+in\s+there\b/i,
+  "give it a shot":
+    /\b(?:give|gives|gave|giving)\s+(?:it|this|that)\s+a\s+shot\b/i,
+};
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function maskCorrectAnswer(context: string | undefined, answer: string) {
+  const sentence = context?.trim();
+  if (!sentence) {
+    return "Choose the expression that best completes the sentence.";
+  }
+
+  const normalizedAnswer = answer.trim().toLowerCase();
+  const exactPattern = new RegExp(
+    `\\b${escapeRegExp(answer.trim()).replace(/\s+/g, "\\s+")}\\b`,
+    "i"
+  );
+  const masked = sentence.replace(
+    CLOZE_PATTERNS[normalizedAnswer] ?? exactPattern,
+    "_____"
+  );
+
+  return masked !== sentence
+    ? masked
+    : "Choose the expression that best completes the sentence.";
+}
+
 
 function mapAdaptiveQuestion(
   item: AdaptiveQuizItem,
@@ -94,8 +130,7 @@ function mapAdaptiveQuestion(
     // back to the masked sentence rather than showing four identical options.
     prompt: meaningsAreDistinct
       ? `What does "${item.correct_word}" mean?`
-      : item.context ||
-        `Choose the correct word: "${item.correct_word}"`,
+      : maskCorrectAnswer(item.context, item.correct_word),
 
     choices,
 

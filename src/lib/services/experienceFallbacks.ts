@@ -54,7 +54,7 @@ const MEANINGS: Record<string, string> = {
 
 export function vocabularyMeaning(word: string) {
   return MEANINGS[word.trim().toLowerCase()] ??
-    "a useful expression from the movie; use the dialogue example below to understand it in context";
+    "a useful word or expression from the movie";
 }
 
 const POSTERS = [
