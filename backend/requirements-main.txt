@@ -8,3 +8,4 @@ scikit-learn==1.9.0
 scipy==1.18.1
 gensim==4.4.0
 spacy==3.8.16
+nltk

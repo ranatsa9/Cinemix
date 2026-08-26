@@ -154,6 +154,20 @@ def get_liked_movie_ids(profile, min_rating=4):
 # FULL ADAPTIVE LEARNING UPDATE LOOP
 # =========================================================
 
+def get_seen_movie_ids(profile, current_movie_id=None):
+    """Return films already present in the learner's activity history."""
+    seen = {
+        entry["movieId"]
+        for entry in profile.get("history", [])
+        if entry.get("movieId") is not None
+    }
+
+    if current_movie_id is not None:
+        seen.add(current_movie_id)
+
+    return list(seen)
+
+
 def update_learner_profile(
     user_id,
     movie_id,
@@ -310,6 +324,13 @@ def update_learner_profile(
             "liked_movie_ids":
                 get_liked_movie_ids(
                     profile
+                ),
+
+            # Avoid recommending films the learner has already completed.
+            "exclude_movie_ids":
+                get_seen_movie_ids(
+                    profile,
+                    movie_id,
                 ),
         },
         top_n=3,

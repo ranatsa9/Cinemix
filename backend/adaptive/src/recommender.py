@@ -175,8 +175,16 @@ class MovieRecommender:
 
     def recommend_movies(self, user_profile, top_n=5):
         scored_df = self.calculate_scores(user_profile)
-        liked_ids = user_profile.get("liked_movie_ids", [])
-        filtered_df = scored_df[~scored_df["movieId"].isin(liked_ids)]
+        liked_ids = set(user_profile.get("liked_movie_ids", []) or [])
+        exclude_ids = set(user_profile.get("exclude_movie_ids", []) or [])
+
+        filtered_df = scored_df[
+            ~scored_df["movieId"].isin(liked_ids | exclude_ids)
+        ]
+
+        # Keep the experience usable after the learner exhausts the catalogue.
+        if filtered_df.empty:
+            filtered_df = scored_df
 
         top_movies = filtered_df.sort_values(
             by="hybrid_score", ascending=False

@@ -10,7 +10,10 @@ import {
   type AdaptiveQuizItem,
 } from "@/lib/api";
 import { getVocabularyForMovie } from "@/lib/mockData/vocabulary";
-import { shuffled } from "@/lib/services/experienceFallbacks";
+import {
+  shuffled,
+  vocabularyMeaning,
+} from "@/lib/services/experienceFallbacks";
 
 import { useExperienceStore } from "@/lib/store/useExperienceStore";
 import { HeroPosterField } from "@/components/scenes/HeroPosterField";
