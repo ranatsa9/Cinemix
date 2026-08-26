@@ -56,3 +56,12 @@ Copy `.env.example` to the appropriate platform settings. Never commit the real 
 - Real `.env` files and API keys are excluded from Git
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for the exact Vercel and Railway setup.
+
+
+Project google drive 
+https://drive.google.com/drive/folders/13OXh9sDsF7TOkBP7OdiQohPV-Dzxi1sY
+
+Deployment link
+https://cinemix-murex.vercel.app/
+
+
