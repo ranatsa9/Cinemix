@@ -23,11 +23,15 @@ import {
 import {
   transcribeAudio,
   TranscriptionResponse,
-  speakWithReela,
   getPracticeLines,
   PracticeLine,
   updateAdaptiveLearning,
 } from "@/lib/api";
+
+import {
+  playLine,
+  type PlaybackHandle,
+} from "@/lib/audio/playLine";
 
 import {
   calculateWordMatch,
@@ -243,11 +247,8 @@ export function SpeakingScene() {
     setReferenceError,
   ] = useState<string | null>(null);
 
-  const referenceAudioRef =
-    useRef<HTMLAudioElement | null>(null);
-
-  const referenceAudioUrlRef =
-    useRef<string | null>(null);
+  const referencePlaybackRef =
+    useRef<PlaybackHandle | null>(null);
 
   /* =======================================================
      AUDIO VISUALIZER
@@ -1209,24 +1210,8 @@ export function SpeakingScene() {
       return;
     }
 
-    if (
-      referenceAudioRef.current
-    ) {
-      referenceAudioRef.current.pause();
-      referenceAudioRef.current =
-        null;
-    }
-
-    if (
-      referenceAudioUrlRef.current
-    ) {
-      URL.revokeObjectURL(
-        referenceAudioUrlRef.current
-      );
-
-      referenceAudioUrlRef.current =
-        null;
-    }
+    referencePlaybackRef.current?.stop();
+    referencePlaybackRef.current = null;
 
     setIsPlayingReference(false);
     setReferenceError(null);
@@ -1350,69 +1335,26 @@ export function SpeakingScene() {
       setReferenceError(null);
       setIsPlayingReference(true);
 
-      if (referenceAudioRef.current) {
-        referenceAudioRef.current.pause();
-        referenceAudioRef.current = null;
-      }
+      referencePlaybackRef.current?.stop();
 
-      if (referenceAudioUrlRef.current) {
-        URL.revokeObjectURL(
-          referenceAudioUrlRef.current
-        );
-        referenceAudioUrlRef.current =
-          null;
-      }
+      const clipId =
+        practiceMode === "line"
+          ? currentLine?.clipId ?? undefined
+          : undefined;
 
-      const audioBlob =
-        await speakWithReela(
-          activeExpectedText
+      const playback = await playLine(
+          activeExpectedText,
+          clipId
         );
 
-      const audioUrl =
-        URL.createObjectURL(
-          audioBlob
-        );
+      referencePlaybackRef.current = playback;
 
-      referenceAudioUrlRef.current =
-        audioUrl;
-
-      const audio =
-        new Audio(audioUrl);
-
-      referenceAudioRef.current =
-        audio;
-
-      const cleanupReferenceAudio =
-        () => {
+      playback.finished.then(() => {
+        if (referencePlaybackRef.current === playback) {
+          referencePlaybackRef.current = null;
           setIsPlayingReference(false);
-
-          if (
-            referenceAudioUrlRef.current
-          ) {
-            URL.revokeObjectURL(
-              referenceAudioUrlRef.current
-            );
-
-            referenceAudioUrlRef.current =
-              null;
-          }
-
-          referenceAudioRef.current =
-            null;
-        };
-
-      audio.onended =
-        cleanupReferenceAudio;
-
-      audio.onerror = () => {
-        setReferenceError(
-          "Reela audio could not be played."
-        );
-
-        cleanupReferenceAudio();
-      };
-
-      await audio.play();
+        }
+      });
     } catch (error) {
       console.error(
         "Reela TTS error:",
@@ -1424,22 +1366,10 @@ export function SpeakingScene() {
       setReferenceError(
         error instanceof Error
           ? error.message
-          : "Reela could not generate the reference audio."
+          : "Reference audio could not be played."
       );
 
-      if (
-        referenceAudioUrlRef.current
-      ) {
-        URL.revokeObjectURL(
-          referenceAudioUrlRef.current
-        );
-
-        referenceAudioUrlRef.current =
-          null;
-      }
-
-      referenceAudioRef.current =
-        null;
+      referencePlaybackRef.current = null;
     }
   };
 
@@ -1480,24 +1410,8 @@ export function SpeakingScene() {
           .catch(() => {});
       }
 
-      if (
-        referenceAudioRef.current
-      ) {
-        referenceAudioRef.current.pause();
-        referenceAudioRef.current =
-          null;
-      }
-
-      if (
-        referenceAudioUrlRef.current
-      ) {
-        URL.revokeObjectURL(
-          referenceAudioUrlRef.current
-        );
-
-        referenceAudioUrlRef.current =
-          null;
-      }
+      referencePlaybackRef.current?.stop();
+      referencePlaybackRef.current = null;
     };
   }, []);
 

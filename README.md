@@ -11,6 +11,11 @@ Cinemix is an adaptive movie recommendation and language-learning experience. It
 - **Speech API:** faster-whisper transcription and ElevenLabs reference voice
 - **Data:** movie catalogue, language features, Word2Vec model, vocabulary candidates, and prepared practice lines
 
+Speaking reference audio uses a resilient three-step player: a registered
+project-owned clip when available, then the ElevenLabs reference voice, then
+browser speech synthesis. See `backend/clips/README.md` for the clip format and
+registration steps.
+
 The production deployment uses three services:
 
 1. Vercel — Next.js frontend
@@ -63,5 +68,4 @@ https://drive.google.com/drive/folders/13OXh9sDsF7TOkBP7OdiQohPV-Dzxi1sY
 
 Deployment link
 https://cinemix-murex.vercel.app/
-
 

@@ -518,6 +518,8 @@ export type PracticeLine = {
   text: string;
   level: string;
   qualityScore: number | null;
+  clipAvailable: boolean;
+  clipId: string | null;
 };
 
 export type PracticeLinesResponse = {

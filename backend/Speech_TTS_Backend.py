@@ -117,10 +117,9 @@ def get_clip_manifest():
     """
     Load clips/manifest.json once.
 
-    Each entry is a short spoken excerpt taken from the
-    film itself, so the learner hears the real delivery
-    instead of a synthetic voice. Missing manifest is not
-    an error: the app falls back to TTS.
+    Each entry is a short, project-owned spoken excerpt.
+    Missing manifest is not an error: the app falls back
+    to TTS.
     """
 
     global _clip_manifest
@@ -283,6 +282,24 @@ def get_practice_data():
                 else None
             )
 
+            clip_id = str(
+                row.get(
+                    "clipId",
+                    "",
+                )
+            ).strip()
+
+            clip_available = str(
+                row.get(
+                    "clipAvailable",
+                    "",
+                )
+            ).strip().lower() in {
+                "1",
+                "true",
+                "yes",
+            }
+
             movies[movie_id] = {
                 "movieId":
                     movie_id,
@@ -315,6 +332,12 @@ def get_practice_data():
 
                         "qualityScore":
                             quality_score,
+
+                        "clipAvailable":
+                            clip_available and bool(clip_id),
+
+                        "clipId":
+                            clip_id or None,
                     }
                 )
 

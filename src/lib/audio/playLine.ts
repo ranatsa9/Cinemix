@@ -5,7 +5,7 @@ import { getMovieClip, speakWithReela } from "@/lib/api";
 
    Three tiers, tried in order:
 
-     1. The real clip from the film.
+     1. A registered, project-owned dialogue clip.
      2. The Reela TTS voice.
      3. The browser's own speech synthesis.
 
@@ -18,15 +18,24 @@ export type PlaybackSource = "clip" | "tts" | "browser";
 export type PlaybackHandle = {
   source: PlaybackSource;
   stop: () => void;
+  finished: Promise<void>;
 };
 
 function playBlob(blob: Blob): Promise<PlaybackHandle> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
+    let finish = () => {};
+    const finished = new Promise<void>((done) => {
+      finish = done;
+    });
+    let cleaned = false;
 
     const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
       URL.revokeObjectURL(url);
+      finish();
     };
 
     audio.onended = cleanup;
@@ -41,6 +50,7 @@ function playBlob(blob: Blob): Promise<PlaybackHandle> {
       .then(() =>
         resolve({
           source: "clip",
+          finished,
           stop: () => {
             audio.pause();
             cleanup();
@@ -63,16 +73,26 @@ function playWithBrowser(text: string): PlaybackHandle {
   }
 
   const utterance = new SpeechSynthesisUtterance(text);
+  let finish = () => {};
+  const finished = new Promise<void>((done) => {
+    finish = done;
+  });
 
   utterance.lang = "en-US";
   utterance.rate = 0.95;
+  utterance.onend = () => finish();
+  utterance.onerror = () => finish();
 
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utterance);
 
   return {
     source: "browser",
-    stop: () => window.speechSynthesis.cancel(),
+    finished,
+    stop: () => {
+      window.speechSynthesis.cancel();
+      finish();
+    },
   };
 }
 

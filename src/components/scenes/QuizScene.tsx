@@ -79,6 +79,16 @@ function maskCorrectAnswer(context: string | undefined, answer: string) {
     return "Choose the expression that best completes the sentence.";
   }
 
+  // The backend already delivers the line with the word removed
+  // ("but there might be some ____ to the skull and brain."). The
+  // answer is therefore NOT in the sentence, so trying to mask it
+  // below always failed and the real movie line was thrown away in
+  // favour of the generic prompt. Detect the existing blank and
+  // keep the line, just normalising the underscore run.
+  if (/_{2,}/.test(sentence)) {
+    return sentence.replace(/_{2,}/g, "_____");
+  }
+
   const normalizedAnswer = answer.trim().toLowerCase();
   const exactPattern = new RegExp(
     `\\b${escapeRegExp(answer.trim()).replace(/\s+/g, "\\s+")}\\b`,
