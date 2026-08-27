@@ -17,6 +17,7 @@ import {
   shuffled,
   strongerLevel,
 } from "@/lib/services/experienceFallbacks";
+import { TeamCredits } from "@/components/scenes/TeamCredits";
 
 
 function useCountUp(
@@ -121,7 +122,7 @@ export function ResultScene() {
 
   const [activePanel, setActivePanel] =
     useState<
-      "progress" | "movies" | null
+      "progress" | "movies" | "team" | null
     >(null);
 
 
@@ -407,6 +408,21 @@ export function ResultScene() {
             }
           >
             View My Progress
+          </MagneticButton>
+
+
+          <MagneticButton
+            variant="ghost"
+
+            onClick={() =>
+              setActivePanel(
+                activePanel === "team"
+                  ? null
+                  : "team"
+              )
+            }
+          >
+            Meet The Team
           </MagneticButton>
 
         </motion.div>
@@ -927,6 +943,27 @@ export function ResultScene() {
                 </div>
 
               )}
+
+            </motion.div>
+
+          )}
+
+          {activePanel === "team" && (
+
+            <motion.div
+              key="team"
+
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+
+              transition={{
+                duration: 0.55,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+            >
+
+              <TeamCredits />
 
             </motion.div>
 
